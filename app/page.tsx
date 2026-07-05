@@ -11,6 +11,7 @@ type Phase = 'idle' | 'loading' | 'enriching' | 'ready' | 'picked'
 
 const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_READ_TOKEN ?? ''
 const CHUNK_SIZE = 15
+const COLLAPSED_SERVICE_COUNT = 6
 
 async function enrichFilm(film: LetterboxdFilm, country: string): Promise<EnrichedFilm> {
   const cacheKey = `${film.slug}:${country}`
@@ -45,6 +46,7 @@ export default function Page() {
   const [enriched, setEnriched] = useState<EnrichedFilm[]>([])
   const [enrichProgress, setEnrichProgress] = useState(0)
   const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set())
+  const [showAllServices, setShowAllServices] = useState(false)
   const [pickedFilm, setPickedFilm] = useState<EnrichedFilm | null>(null)
   const [error, setError] = useState<string | null>(null)
   const cancelRef = useRef(false)
@@ -279,7 +281,7 @@ export default function Page() {
                 <p className="text-xs font-medium" style={{ color: '#71717a' }}>
                   Services found so far — select yours:
                 </p>
-                {sortedServices.map(name => {
+                {(showAllServices ? sortedServices : sortedServices.slice(0, COLLAPSED_SERVICE_COUNT)).map(name => {
                   const svc = serviceOptions.get(name)!
                   return (
                     <label
@@ -312,6 +314,17 @@ export default function Page() {
                     </label>
                   )
                 })}
+                {sortedServices.length > COLLAPSED_SERVICE_COUNT && (
+                  <button
+                    onClick={() => setShowAllServices(v => !v)}
+                    className="text-xs py-1 text-left transition-colors"
+                    style={{ color: '#f5a623' }}
+                  >
+                    {showAllServices
+                      ? 'View less'
+                      : `View more (${sortedServices.length - COLLAPSED_SERVICE_COUNT} more)`}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -339,7 +352,7 @@ export default function Page() {
                   Select the services you subscribe to:
                 </p>
                 <div className="flex flex-col gap-2">
-                  {sortedServices.map(name => {
+                  {(showAllServices ? sortedServices : sortedServices.slice(0, COLLAPSED_SERVICE_COUNT)).map(name => {
                     const svc = serviceOptions.get(name)!
                     return (
                       <label
@@ -372,6 +385,17 @@ export default function Page() {
                       </label>
                     )
                   })}
+                  {sortedServices.length > COLLAPSED_SERVICE_COUNT && (
+                    <button
+                      onClick={() => setShowAllServices(v => !v)}
+                      className="text-xs py-1 text-left transition-colors"
+                      style={{ color: '#f5a623' }}
+                    >
+                      {showAllServices
+                        ? 'View less'
+                        : `View more (${sortedServices.length - COLLAPSED_SERVICE_COUNT} more)`}
+                    </button>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2 pt-2">
