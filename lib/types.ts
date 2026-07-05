@@ -3,6 +3,7 @@ export type TmdbMovieResult = {
   posterPath: string | null
   overview: string
   voteAverage: number
+  genreIds: number[]
 }
 
 export type LetterboxdFilm = {
@@ -23,4 +24,5 @@ export type EnrichedFilm = LetterboxdFilm & {
   overview: string | null
   voteAverage: number | null
   providers: StreamingProvider[]
+  genreIds: number[]
 }

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import MovieCard from '@/components/MovieCard'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { searchMovie, getWatchProviders } from '@/lib/tmdb'
-import { sortServices, COUNTRIES } from '@/lib/services'
+import { sortServices, COUNTRIES, TMDB_GENRES } from '@/lib/services'
 import type { LetterboxdFilm, EnrichedFilm } from '@/lib/types'
 
 type Phase = 'idle' | 'loading' | 'enriching' | 'ready' | 'picked'
@@ -20,7 +20,7 @@ async function enrichFilm(film: LetterboxdFilm, country: string): Promise<Enrich
 
   const tmdbResult = await searchMovie(film.name, film.year, TMDB_TOKEN)
   if (!tmdbResult) {
-    return { ...film, tmdbId: null, posterPath: null, overview: null, voteAverage: null, providers: [] }
+    return { ...film, tmdbId: null, posterPath: null, overview: null, voteAverage: null, providers: [], genreIds: [] }
   }
 
   const providers = await getWatchProviders(tmdbResult.tmdbId, country, TMDB_TOKEN)
@@ -32,6 +32,7 @@ async function enrichFilm(film: LetterboxdFilm, country: string): Promise<Enrich
     overview: tmdbResult.overview,
     voteAverage: tmdbResult.voteAverage,
     providers,
+    genreIds: tmdbResult.genreIds,
   }
 
   cacheSet(cacheKey, enriched)
@@ -47,6 +48,8 @@ export default function Page() {
   const [enrichProgress, setEnrichProgress] = useState(0)
   const [selectedServices, setSelectedServices] = useState<Set<string>>(new Set())
   const [showAllServices, setShowAllServices] = useState(false)
+  const [primaryGenre, setPrimaryGenre] = useState<number | null>(null)
+  const [alternateGenre, setAlternateGenre] = useState<number | null>(null)
   const [pickedFilm, setPickedFilm] = useState<EnrichedFilm | null>(null)
   const [error, setError] = useState<string | null>(null)
   const cancelRef = useRef(false)
@@ -101,10 +104,27 @@ export default function Page() {
     [serviceOptions]
   )
 
+  const availableGenres = useMemo(() => {
+    const seen = new Set<number>()
+    for (const film of enriched) {
+      for (const id of (film.genreIds ?? [])) {
+        if (TMDB_GENRES[id]) seen.add(id)
+      }
+    }
+    return Array.from(seen).sort((a, b) =>
+      TMDB_GENRES[a].localeCompare(TMDB_GENRES[b])
+    )
+  }, [enriched])
+
   const availableFilms = useMemo(() => {
     if (!selectedServices.size) return []
-    return enriched.filter(film => film.providers.some(p => selectedServices.has(p.providerName)))
-  }, [enriched, selectedServices])
+    const genreFilter = [primaryGenre, alternateGenre].filter((g): g is number => g !== null)
+    return enriched.filter(film => {
+      if (!film.providers.some(p => selectedServices.has(p.providerName))) return false
+      if (genreFilter.length === 0) return true
+      return (film.genreIds ?? []).some(id => genreFilter.includes(id))
+    })
+  }, [enriched, selectedServices, primaryGenre, alternateGenre])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -116,6 +136,8 @@ export default function Page() {
     setEnriched([])
     setEnrichProgress(0)
     setPickedFilm(null)
+    setPrimaryGenre(null)
+    setAlternateGenre(null)
     setPhase('loading')
 
     try {
@@ -397,6 +419,38 @@ export default function Page() {
                     </button>
                   )}
                 </div>
+
+                {availableGenres.length > 0 && (
+                  <div className="flex flex-col gap-1.5 pt-2">
+                    <p className="text-xs font-medium" style={{ color: '#71717a' }}>
+                      Genre (optional — match either):
+                    </p>
+                    <div className="flex gap-2">
+                      <select
+                        value={primaryGenre ?? ''}
+                        onChange={e => setPrimaryGenre(e.target.value ? Number(e.target.value) : null)}
+                        className="flex-1 px-3 py-2 rounded text-sm outline-none"
+                        style={{ background: '#1a1a1a', color: '#e8e5e0', border: '1px solid #2a2a2a' }}
+                      >
+                        <option value="">Any genre</option>
+                        {availableGenres.map(id => (
+                          <option key={id} value={id}>{TMDB_GENRES[id]}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={alternateGenre ?? ''}
+                        onChange={e => setAlternateGenre(e.target.value ? Number(e.target.value) : null)}
+                        className="flex-1 px-3 py-2 rounded text-sm outline-none"
+                        style={{ background: '#1a1a1a', color: '#e8e5e0', border: '1px solid #2a2a2a' }}
+                      >
+                        <option value="">Any genre</option>
+                        {availableGenres.map(id => (
+                          <option key={id} value={id}>{TMDB_GENRES[id]}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex flex-col gap-2 pt-2">
                   <button

@@ -29,6 +29,7 @@ export async function searchMovie(
       : null,
     overview: movie.overview || '',
     voteAverage: Math.round((movie.vote_average || 0) * 10) / 10,
+    genreIds: movie.genre_ids || [],
   }
 }
 
