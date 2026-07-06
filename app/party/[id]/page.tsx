@@ -88,7 +88,6 @@ export default function PartyPage() {
   const [copied, setCopied] = useState(false)
 
   const cancelRef = useRef(false)
-  const settingsTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Load party + detect host
   useEffect(() => {
@@ -125,9 +124,17 @@ export default function PartyPage() {
         setPhase('picked')
       } else if (token) {
         setPhase('host-ready')
-        setSelectedServices(new Set(data.services))
-        if (data.primaryGenre !== null) setPrimaryGenre(data.primaryGenre)
-        if (data.alternateGenre !== null) setAlternateGenre(data.alternateGenre)
+        const savedServices = localStorage.getItem(`party-services-${id}`)
+        const savedGenres = localStorage.getItem(`party-genres-${id}`)
+        setSelectedServices(savedServices ? new Set(JSON.parse(savedServices)) : new Set(data.services))
+        if (savedGenres) {
+          const g = JSON.parse(savedGenres)
+          if (g.primaryGenre !== null) setPrimaryGenre(g.primaryGenre)
+          if (g.alternateGenre !== null) setAlternateGenre(g.alternateGenre)
+        } else {
+          if (data.primaryGenre !== null) setPrimaryGenre(data.primaryGenre)
+          if (data.alternateGenre !== null) setAlternateGenre(data.alternateGenre)
+        }
       } else if (member) {
         setPhase('waiting')
       } else {
@@ -143,22 +150,16 @@ export default function PartyPage() {
     return () => clearInterval(interval)
   }, [phase, fetchParty])
 
-  // Sync host settings to server (debounced)
+  // Persist host's service/genre selections locally (no server write — avoids race with joins)
   useEffect(() => {
-    if (!isHost || !hostToken || phase !== 'host-ready') return
-    if (settingsTimer.current) clearTimeout(settingsTimer.current)
-    settingsTimer.current = setTimeout(() => {
-      fetch(`/api/party/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Host-Token': hostToken },
-        body: JSON.stringify({
-          services: Array.from(selectedServices),
-          primaryGenre,
-          alternateGenre,
-        }),
-      })
-    }, 600)
-  }, [selectedServices, primaryGenre, alternateGenre, isHost, hostToken, id, phase])
+    if (!isHost) return
+    localStorage.setItem(`party-services-${id}`, JSON.stringify(Array.from(selectedServices)))
+  }, [selectedServices, isHost, id])
+
+  useEffect(() => {
+    if (!isHost) return
+    localStorage.setItem(`party-genres-${id}`, JSON.stringify({ primaryGenre, alternateGenre }))
+  }, [primaryGenre, alternateGenre, isHost, id])
 
   function toggleService(name: string) {
     setSelectedServices(prev => {
