@@ -298,6 +298,21 @@ export default function Page() {
                 CREATE A PARTY
               </span>
             </Link>
+
+            <Link
+              href="/party/join"
+              className="flex flex-col items-center gap-0.5 pb-1 text-center transition-opacity hover:opacity-80"
+            >
+              <span className="text-xs" style={{ color: '#71717a' }}>
+                Attending a movie night?
+              </span>
+              <span
+                className="text-xs font-bold tracking-wide"
+                style={{ color: '#f5a623', letterSpacing: '0.05em' }}
+              >
+                JOIN A PARTY
+              </span>
+            </Link>
           </form>
         )}
 
