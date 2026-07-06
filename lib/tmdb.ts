@@ -1,5 +1,7 @@
 import type { StreamingProvider, TmdbMovieResult } from './types'
 
+const TMDB_TIMEOUT_MS = 8_000
+
 export async function searchMovie(
   name: string,
   year: string,
@@ -13,9 +15,16 @@ export async function searchMovie(
   })
   if (year) params.set('primary_release_year', year)
 
-  const res = await fetch(`https://api.themoviedb.org/3/search/movie?${params}`, {
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-  })
+  let res: Response
+  try {
+    res = await fetch(`https://api.themoviedb.org/3/search/movie?${params}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
+    })
+  } catch {
+    // Network error or timeout on this one film — skip it rather than stalling the whole batch
+    return null
+  }
   if (!res.ok) return null
 
   const data = await res.json()
@@ -38,9 +47,15 @@ export async function getWatchProviders(
   country: string,
   token: string
 ): Promise<StreamingProvider[]> {
-  const res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers`, {
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-  })
+  let res: Response
+  try {
+    res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+      signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
+    })
+  } catch {
+    return []
+  }
   if (!res.ok) return []
 
   const data = await res.json()

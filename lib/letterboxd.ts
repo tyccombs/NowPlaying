@@ -9,6 +9,7 @@ const HEADERS = {
 }
 
 const YEAR_RE = /^(.+?)\s+\((\d{4})\)$/
+const PAGE_TIMEOUT_MS = 12_000
 
 function parseFilmsFromHtml(html: string): { films: LetterboxdFilm[]; totalPages: number } {
   const $ = load(html)
@@ -41,7 +42,7 @@ async function fetchPage(username: string, page: number): Promise<string> {
       ? `https://letterboxd.com/${username}/watchlist/`
       : `https://letterboxd.com/${username}/watchlist/page/${page}/`
 
-  const res = await fetch(url, { headers: HEADERS })
+  const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(PAGE_TIMEOUT_MS) })
   if (res.status === 404) throw Object.assign(new Error('not_found'), { code: 'not_found' })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.text()
@@ -69,9 +70,13 @@ export async function fetchWatchlist(username: string): Promise<{
 
     if (totalPages <= 1) return { films: page1Films }
 
-    // Fetch remaining pages in parallel
+    // Fetch remaining pages in parallel. Use allSettled so one slow/failed
+    // page (timeout, dropped connection) doesn't discard the whole scan.
     const pageNumbers = Array.from({ length: totalPages - 1 }, (_, i) => i + 2)
-    const htmlPages = await Promise.all(pageNumbers.map(p => fetchPage(username, p)))
+    const settled = await Promise.allSettled(pageNumbers.map(p => fetchPage(username, p)))
+    const htmlPages = settled
+      .filter((r): r is PromiseFulfilledResult<string> => r.status === 'fulfilled')
+      .map(r => r.value)
     const allFilms = [
       page1Films,
       ...htmlPages.map(html => parseFilmsFromHtml(html).films),

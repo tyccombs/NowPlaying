@@ -63,15 +63,23 @@ export default function Page() {
     const results: EnrichedFilm[] = []
 
     async function run() {
-      for (let i = 0; i < films.length; i += CHUNK_SIZE) {
+      try {
+        for (let i = 0; i < films.length; i += CHUNK_SIZE) {
+          if (cancelRef.current) return
+          const chunk = films.slice(i, i + CHUNK_SIZE)
+          const enrichedChunk = await Promise.all(chunk.map(f => enrichFilm(f, country)))
+          results.push(...enrichedChunk)
+          setEnriched([...results])
+          setEnrichProgress(Math.round(((i + chunk.length) / films.length) * 100))
+        }
+        if (!cancelRef.current) setPhase('ready')
+      } catch {
         if (cancelRef.current) return
-        const chunk = films.slice(i, i + CHUNK_SIZE)
-        const enrichedChunk = await Promise.all(chunk.map(f => enrichFilm(f, country)))
-        results.push(...enrichedChunk)
-        setEnriched([...results])
-        setEnrichProgress(Math.round(((i + chunk.length) / films.length) * 100))
+        // Never leave the user stuck on a frozen progress bar — surface an
+        // error and let them retry instead.
+        setError('Something went wrong while loading streaming data. Please try again.')
+        setPhase('idle')
       }
-      if (!cancelRef.current) setPhase('ready')
     }
 
     run()
