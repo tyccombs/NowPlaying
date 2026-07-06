@@ -1,15 +1,12 @@
-import { list, put } from '@vercel/blob'
+import { get, put, BlobNotFoundError } from '@vercel/blob'
 import type { PartyData, PartyState } from './types'
 
 export async function readParty(id: string): Promise<PartyData | null> {
   try {
-    const { blobs } = await list({ prefix: `parties/${id}.json`, limit: 1 })
-    if (!blobs.length) return null
-    const res = await fetch(blobs[0].downloadUrl, {
-      headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
-    })
-    if (!res.ok) return null
-    return await res.json()
+    const result = await get(`parties/${id}.json`, { access: 'private' })
+    if (!result || result.statusCode !== 200 || !result.stream) return null
+    const text = await new Response(result.stream).text()
+    return JSON.parse(text) as PartyData
   } catch {
     return null
   }
