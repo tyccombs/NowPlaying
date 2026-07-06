@@ -195,7 +195,7 @@ export default function Page() {
       <div className="mb-10 text-center">
         <h1
           className="uppercase"
-          style={{ color: '#f5a623', fontFamily: 'Humane, sans-serif', fontSize: '5.5rem', lineHeight: 1, letterSpacing: '0.04em' }}
+          style={{ color: '#f5a623', fontFamily: 'Humane, sans-serif', fontSize: '5.5rem', lineHeight: 1, letterSpacing: '-0.03em' }}
         >
           Now Playing
         </h1>
