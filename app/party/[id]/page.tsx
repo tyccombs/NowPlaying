@@ -102,7 +102,7 @@ export default function PartyPage() {
   }, [id])
 
   const fetchParty = useCallback(async () => {
-    const res = await fetch(`/api/party/${id}`)
+    const res = await fetch(`/api/party/${id}`, { cache: 'no-store' })
     if (res.status === 404) { setPhase('error'); return null }
     if (res.status === 410) { setPhase('expired'); return null }
     if (!res.ok) { setPhase('error'); return null }
@@ -198,8 +198,12 @@ export default function PartyPage() {
     cancelRef.current = false
 
     try {
-      // Fetch all watchlists
-      const allMembers = [party.hostUsername, ...party.members]
+      // Fetch fresh party state so we always have the latest member list
+      const freshRes = await fetch(`/api/party/${id}`, { cache: 'no-store' })
+      const freshParty: PartyState = freshRes.ok ? await freshRes.json() : party
+      setParty(freshParty)
+
+      const allMembers = [freshParty.hostUsername, ...freshParty.members]
       setPickStatus(`Fetching ${allMembers.length} watchlists…`)
 
       const watchlistResults = await Promise.all(
