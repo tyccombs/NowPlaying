@@ -39,8 +39,8 @@ export default function NewPartyPage() {
     <main className="min-h-dvh flex flex-col items-center px-5 py-12">
       <div className="mb-10 text-center">
         <h1
-          className="text-4xl font-bold tracking-widest uppercase"
-          style={{ color: '#f5a623', letterSpacing: '0.2em' }}
+          className="uppercase"
+          style={{ color: '#f5a623', fontFamily: 'Humane, sans-serif', fontSize: '5.5rem', lineHeight: 1, letterSpacing: '0.04em' }}
         >
           Now Playing
         </h1>

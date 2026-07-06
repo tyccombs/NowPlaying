@@ -330,8 +330,8 @@ export default function PartyPage() {
       <div className="mb-8 text-center">
         <Link href="/">
           <h1
-            className="text-4xl font-bold tracking-widest uppercase"
-            style={{ color: '#f5a623', letterSpacing: '0.2em' }}
+            className="uppercase"
+            style={{ color: '#f5a623', fontFamily: 'Humane, sans-serif', fontSize: '5.5rem', lineHeight: 1, letterSpacing: '0.04em' }}
           >
             Now Playing
           </h1>

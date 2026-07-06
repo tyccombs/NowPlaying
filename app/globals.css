@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Humane';
+  src: url('/Humane-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+
 html,
 body {
   background-color: #0d0d0d;
