@@ -270,7 +270,7 @@ export default function PartyPage() {
       await fetch(`/api/party/${id}/pick`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-Host-Token': hostToken },
-        body: JSON.stringify({ pickedFilm: picked }),
+        body: JSON.stringify({ pickedFilm: picked, poolSize: available.length }),
       })
 
       setPickedFilm(picked)
@@ -602,6 +602,13 @@ export default function PartyPage() {
                 No films in common for all members — showing films most of the group has
               </p>
             )}
+            {party && (
+              <p className="text-xs text-center" style={{ color: '#555' }}>
+                {party.poolSize != null
+                  ? `Chosen from ${party.poolSize} film${party.poolSize !== 1 ? 's' : ''} across ${allMembers.length} watchlist${allMembers.length !== 1 ? 's' : ''}`
+                  : `Picked from ${allMembers.length} watchlist${allMembers.length !== 1 ? 's' : ''}`}
+              </p>
+            )}
             <MovieCard
               film={pickedFilm}
               onReroll={isHost ? async () => {
@@ -612,7 +619,7 @@ export default function PartyPage() {
                 await fetch(`/api/party/${id}/pick`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json', 'X-Host-Token': hostToken ?? '' },
-                  body: JSON.stringify({ pickedFilm: next }),
+                  body: JSON.stringify({ pickedFilm: next, poolSize: availableFilms.length }),
                 })
               } : () => {}}
               onBack={isHost ? () => {

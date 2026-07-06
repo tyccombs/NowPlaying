@@ -36,6 +36,7 @@ export type PartyData = {
   primaryGenre: number | null
   alternateGenre: number | null
   pickedFilm: EnrichedFilm | null
+  poolSize: number | null
   createdAt: number
 }
 

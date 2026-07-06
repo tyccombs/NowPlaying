@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     primaryGenre: null,
     alternateGenre: null,
     pickedFilm: null,
+    poolSize: null,
     createdAt: Date.now(),
   }
 

@@ -15,6 +15,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (!pickedFilm) return NextResponse.json({ error: 'pickedFilm required' }, { status: 400 })
 
   party.pickedFilm = pickedFilm
+  if (typeof body.poolSize === 'number') party.poolSize = body.poolSize
   await writeParty(party)
   return NextResponse.json(toPublic(party))
 }
