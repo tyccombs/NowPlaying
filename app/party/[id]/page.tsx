@@ -604,24 +604,25 @@ export default function PartyPage() {
             )}
             <MovieCard
               film={pickedFilm}
-              onReroll={() => {}}
-              onBack={() => {}}
-              availableCount={1}
+              onReroll={isHost ? async () => {
+                const others = availableFilms.filter(f => f.slug !== pickedFilm.slug)
+                if (!others.length) return
+                const next = others[Math.floor(Math.random() * others.length)]
+                setPickedFilm(next)
+                await fetch(`/api/party/${id}/pick`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json', 'X-Host-Token': hostToken ?? '' },
+                  body: JSON.stringify({ pickedFilm: next }),
+                })
+              } : () => {}}
+              onBack={isHost ? () => {
+                setPickedFilm(null)
+                setPhase('host-ready')
+                setPickStatus('')
+                setPickProgress(0)
+              } : () => {}}
+              availableCount={isHost ? availableFilms.length : 1}
             />
-            {isHost && (
-              <button
-                onClick={() => {
-                  setPickedFilm(null)
-                  setPhase('host-ready')
-                  setPickStatus('')
-                  setPickProgress(0)
-                }}
-                className="text-xs py-2 text-center"
-                style={{ color: '#555' }}
-              >
-                ← Pick again
-              </button>
-            )}
           </div>
         )}
       </div>
