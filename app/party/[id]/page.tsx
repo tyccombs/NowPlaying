@@ -448,18 +448,31 @@ export default function PartyPage() {
 
         {/* WAITING (non-host joined) */}
         {phase === 'waiting' && (
-          <div
-            className="px-4 py-4 rounded text-center"
-            style={{ background: '#141414', border: '1px solid #232323' }}
-          >
-            <p className="text-sm font-medium">You&apos;re in!</p>
-            <p className="text-xs mt-1" style={{ color: '#71717a' }}>
-              Waiting for the host to pick a movie…
-            </p>
+          <div className="flex flex-col gap-3">
             <div
-              className="mt-3 w-5 h-5 mx-auto rounded-full border-2 animate-spin"
-              style={{ borderColor: '#f5a623', borderTopColor: 'transparent' }}
-            />
+              className="px-4 py-4 rounded text-center"
+              style={{ background: '#141414', border: '1px solid #232323' }}
+            >
+              <p className="text-sm font-medium">You&apos;re in!</p>
+              <p className="text-xs mt-1" style={{ color: '#71717a' }}>
+                Waiting for the host to pick a movie…
+              </p>
+              <div
+                className="mt-3 w-5 h-5 mx-auto rounded-full border-2 animate-spin"
+                style={{ borderColor: '#f5a623', borderTopColor: 'transparent' }}
+              />
+            </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem(`party-member-${id}`)
+                setMyUsername(null)
+                setPhase('joining')
+              }}
+              className="text-xs py-1 text-center"
+              style={{ color: '#444' }}
+            >
+              Not you? Join as someone else
+            </button>
           </div>
         )}
 
