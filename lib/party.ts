@@ -1,13 +1,17 @@
-import { get, put, BlobNotFoundError } from '@vercel/blob'
+import { head, put, BlobNotFoundError } from '@vercel/blob'
 import type { PartyData, PartyState } from './types'
 
 export async function readParty(id: string): Promise<PartyData | null> {
   try {
-    const result = await get(`parties/${id}.json`, { access: 'private' })
-    if (!result || result.statusCode !== 200 || !result.stream) return null
-    const text = await new Response(result.stream).text()
-    return JSON.parse(text) as PartyData
-  } catch {
+    const meta = await head(`parties/${id}.json`)
+    const res = await fetch(meta.downloadUrl, {
+      headers: { Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}` },
+      cache: 'no-store',
+    })
+    if (!res.ok) return null
+    return await res.json() as PartyData
+  } catch (err) {
+    if (err instanceof BlobNotFoundError) return null
     return null
   }
 }
