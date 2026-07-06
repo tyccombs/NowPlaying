@@ -5,8 +5,8 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import MovieCard from '@/components/MovieCard'
 import { cacheGet, cacheSet } from '@/lib/cache'
-import { searchMovie, getWatchProviders } from '@/lib/tmdb'
-import { sortServices, TMDB_GENRES, FREE_SERVICES } from '@/lib/services'
+import { searchMovie, getMovieDetails } from '@/lib/tmdb'
+import { sortServices, TMDB_GENRES, FREE_SERVICES, RUNTIME_OPTIONS, RUNTIME_BUFFER_MINUTES } from '@/lib/services'
 import type { LetterboxdFilm, EnrichedFilm, PartyState } from '@/lib/types'
 
 const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_READ_TOKEN ?? ''
@@ -21,10 +21,10 @@ async function enrichFilm(film: LetterboxdFilm, country: string): Promise<Enrich
 
   const tmdbResult = await searchMovie(film.name, film.year, TMDB_TOKEN)
   if (!tmdbResult) {
-    return { ...film, tmdbId: null, posterPath: null, overview: null, voteAverage: null, providers: [], genreIds: [] }
+    return { ...film, tmdbId: null, posterPath: null, overview: null, voteAverage: null, providers: [], genreIds: [], runtime: null }
   }
 
-  const providers = await getWatchProviders(tmdbResult.tmdbId, country, TMDB_TOKEN)
+  const { runtime, providers } = await getMovieDetails(tmdbResult.tmdbId, country, TMDB_TOKEN)
   const enriched: EnrichedFilm = {
     ...film,
     tmdbId: tmdbResult.tmdbId,
@@ -33,6 +33,7 @@ async function enrichFilm(film: LetterboxdFilm, country: string): Promise<Enrich
     voteAverage: tmdbResult.voteAverage,
     providers,
     genreIds: tmdbResult.genreIds,
+    runtime,
   }
 
   cacheSet(cacheKey, enriched)
@@ -78,6 +79,7 @@ export default function PartyPage() {
   const [showAllServices, setShowAllServices] = useState(false)
   const [primaryGenre, setPrimaryGenre] = useState<number | null>(null)
   const [alternateGenre, setAlternateGenre] = useState<number | null>(null)
+  const [maxRuntime, setMaxRuntime] = useState<number | null>(null)
 
   // Picking
   const [pickProgress, setPickProgress] = useState(0)
@@ -126,6 +128,7 @@ export default function PartyPage() {
         setPhase('host-ready')
         const savedServices = localStorage.getItem(`party-services-${id}`)
         const savedGenres = localStorage.getItem(`party-genres-${id}`)
+        const savedRuntime = localStorage.getItem(`party-runtime-${id}`)
         setSelectedServices(savedServices ? new Set(JSON.parse(savedServices)) : new Set(data.services))
         if (savedGenres) {
           const g = JSON.parse(savedGenres)
@@ -135,6 +138,7 @@ export default function PartyPage() {
           if (data.primaryGenre !== null) setPrimaryGenre(data.primaryGenre)
           if (data.alternateGenre !== null) setAlternateGenre(data.alternateGenre)
         }
+        if (savedRuntime) setMaxRuntime(JSON.parse(savedRuntime))
       } else if (member) {
         setPhase('waiting')
       } else {
@@ -160,6 +164,11 @@ export default function PartyPage() {
     if (!isHost) return
     localStorage.setItem(`party-genres-${id}`, JSON.stringify({ primaryGenre, alternateGenre }))
   }, [primaryGenre, alternateGenre, isHost, id])
+
+  useEffect(() => {
+    if (!isHost) return
+    localStorage.setItem(`party-runtime-${id}`, JSON.stringify(maxRuntime))
+  }, [maxRuntime, isHost, id])
 
   function toggleService(name: string) {
     setSelectedServices(prev => {
@@ -254,8 +263,11 @@ export default function PartyPage() {
       const genreFilter = [primaryGenre, alternateGenre].filter((g): g is number => g !== null)
       const available = results.filter(film => {
         if (!film.providers.some(p => selectedServices.has(p.providerName))) return false
-        if (genreFilter.length === 0) return true
-        return (film.genreIds ?? []).some(id => genreFilter.includes(id))
+        if (genreFilter.length > 0 && !(film.genreIds ?? []).some(id => genreFilter.includes(id))) return false
+        if (maxRuntime !== null) {
+          if (film.runtime == null || film.runtime > maxRuntime + RUNTIME_BUFFER_MINUTES) return false
+        }
+        return true
       })
 
       if (available.length === 0) {
@@ -307,10 +319,13 @@ export default function PartyPage() {
     const genreFilter = [primaryGenre, alternateGenre].filter((g): g is number => g !== null)
     return enrichedPool.filter(film => {
       if (!film.providers.some(p => selectedServices.has(p.providerName))) return false
-      if (genreFilter.length === 0) return true
-      return (film.genreIds ?? []).some(gId => genreFilter.includes(gId))
+      if (genreFilter.length > 0 && !(film.genreIds ?? []).some(gId => genreFilter.includes(gId))) return false
+      if (maxRuntime !== null) {
+        if (film.runtime == null || film.runtime > maxRuntime + RUNTIME_BUFFER_MINUTES) return false
+      }
+      return true
     })
-  }, [enrichedPool, selectedServices, primaryGenre, alternateGenre])
+  }, [enrichedPool, selectedServices, primaryGenre, alternateGenre, maxRuntime])
 
   const partyLink = typeof window !== 'undefined' ? window.location.href : ''
   const allMembers = party ? [party.hostUsername, ...party.members] : []
@@ -574,6 +589,25 @@ export default function PartyPage() {
                   ))}
                 </select>
               </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <p className="text-xs font-medium" style={{ color: '#71717a' }}>
+                Max runtime (optional):
+              </p>
+              <select
+                value={maxRuntime ?? ''}
+                onChange={e => setMaxRuntime(e.target.value ? Number(e.target.value) : null)}
+                className="w-full px-3 py-2 rounded text-sm outline-none"
+                style={{ background: '#1a1a1a', color: '#e8e5e0', border: '1px solid #2a2a2a' }}
+              >
+                <option value="">Any length</option>
+                {RUNTIME_OPTIONS.map(mins => (
+                  <option key={mins} value={mins}>
+                    Up to {mins} min (+{RUNTIME_BUFFER_MINUTES} min buffer)
+                  </option>
+                ))}
+              </select>
             </div>
 
             {pickStatus && (

@@ -35,6 +35,9 @@ export default function MovieCard({ film, onReroll, onBack, availableCount }: Pr
           <h2 className="text-2xl font-bold text-white leading-tight">{film.name}</h2>
           <div className="flex items-center gap-3 mt-1 text-sm text-zinc-400">
             {film.year && <span>{film.year}</span>}
+            {film.runtime != null && (
+              <span>{Math.floor(film.runtime / 60)}h {film.runtime % 60}m</span>
+            )}
             {film.voteAverage != null && film.voteAverage > 0 && (
               <span className="flex items-center gap-1">
                 <span className="text-amber-400">★</span>

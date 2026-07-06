@@ -26,6 +26,7 @@ export type EnrichedFilm = LetterboxdFilm & {
   voteAverage: number | null
   providers: StreamingProvider[]
   genreIds: number[]
+  runtime: number | null
 }
 
 export type PartyData = {

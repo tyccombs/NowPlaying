@@ -42,25 +42,33 @@ export async function searchMovie(
   }
 }
 
-export async function getWatchProviders(
+export async function getMovieDetails(
   tmdbId: number,
   country: string,
   token: string
-): Promise<StreamingProvider[]> {
+): Promise<{ runtime: number | null; providers: StreamingProvider[] }> {
   let res: Response
   try {
-    res = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}/watch/providers`, {
-      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
-    })
+    // append_to_response bundles the watch/providers call onto the same
+    // request as movie details (which is where `runtime` lives) instead of
+    // firing a second fetch.
+    res = await fetch(
+      `https://api.themoviedb.org/3/movie/${tmdbId}?append_to_response=watch%2Fproviders`,
+      {
+        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        signal: AbortSignal.timeout(TMDB_TIMEOUT_MS),
+      }
+    )
   } catch {
-    return []
+    return { runtime: null, providers: [] }
   }
-  if (!res.ok) return []
+  if (!res.ok) return { runtime: null, providers: [] }
 
   const data = await res.json()
-  const countryData = data.results?.[country]
-  if (!countryData) return []
+  const runtime = typeof data.runtime === 'number' && data.runtime > 0 ? data.runtime : null
+
+  const countryData = data['watch/providers']?.results?.[country]
+  if (!countryData) return { runtime, providers: [] }
 
   // TMDB splits providers into subscription (`flatrate`) vs ad-supported/free
   // (`free`, `ads`) tiers, e.g. Tubi and Pluto TV live under `free`. A provider
@@ -90,5 +98,5 @@ export async function getWatchProviders(
     }
   }
 
-  return Array.from(seen.values())
+  return { runtime, providers: Array.from(seen.values()) }
 }

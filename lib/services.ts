@@ -50,6 +50,12 @@ export function sortServices(services: string[]): string[] {
   return [...prioritized, ...rest]
 }
 
+// A film up to this many minutes over the selected max runtime still counts
+// as a match — trailers/credits padding shouldn't rule out a near-fit film.
+export const RUNTIME_BUFFER_MINUTES = 7
+
+export const RUNTIME_OPTIONS = [90, 100, 110, 120, 150, 180]
+
 export const COUNTRIES = [
   { code: 'US', name: 'United States' },
   { code: 'GB', name: 'United Kingdom' },

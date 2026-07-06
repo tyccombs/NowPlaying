@@ -4,8 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import MovieCard from '@/components/MovieCard'
 import { cacheGet, cacheSet } from '@/lib/cache'
-import { searchMovie, getWatchProviders } from '@/lib/tmdb'
-import { sortServices, COUNTRIES, TMDB_GENRES, FREE_SERVICES } from '@/lib/services'
+import { searchMovie, getMovieDetails } from '@/lib/tmdb'
+import { sortServices, COUNTRIES, TMDB_GENRES, FREE_SERVICES, RUNTIME_OPTIONS, RUNTIME_BUFFER_MINUTES } from '@/lib/services'
 import type { LetterboxdFilm, EnrichedFilm } from '@/lib/types'
 
 type Phase = 'idle' | 'loading' | 'enriching' | 'ready' | 'picked'
@@ -21,10 +21,10 @@ async function enrichFilm(film: LetterboxdFilm, country: string): Promise<Enrich
 
   const tmdbResult = await searchMovie(film.name, film.year, TMDB_TOKEN)
   if (!tmdbResult) {
-    return { ...film, tmdbId: null, posterPath: null, overview: null, voteAverage: null, providers: [], genreIds: [] }
+    return { ...film, tmdbId: null, posterPath: null, overview: null, voteAverage: null, providers: [], genreIds: [], runtime: null }
   }
 
-  const providers = await getWatchProviders(tmdbResult.tmdbId, country, TMDB_TOKEN)
+  const { runtime, providers } = await getMovieDetails(tmdbResult.tmdbId, country, TMDB_TOKEN)
 
   const enriched: EnrichedFilm = {
     ...film,
@@ -34,6 +34,7 @@ async function enrichFilm(film: LetterboxdFilm, country: string): Promise<Enrich
     voteAverage: tmdbResult.voteAverage,
     providers,
     genreIds: tmdbResult.genreIds,
+    runtime,
   }
 
   cacheSet(cacheKey, enriched)
@@ -51,6 +52,7 @@ export default function Page() {
   const [showAllServices, setShowAllServices] = useState(false)
   const [primaryGenre, setPrimaryGenre] = useState<number | null>(null)
   const [alternateGenre, setAlternateGenre] = useState<number | null>(null)
+  const [maxRuntime, setMaxRuntime] = useState<number | null>(null)
   const [pickedFilm, setPickedFilm] = useState<EnrichedFilm | null>(null)
   const [error, setError] = useState<string | null>(null)
   const cancelRef = useRef(false)
@@ -125,15 +127,23 @@ export default function Page() {
     )
   }, [enriched])
 
+  const availableRuntimes = useMemo(
+    () => enriched.some(f => f.runtime != null),
+    [enriched]
+  )
+
   const availableFilms = useMemo(() => {
     if (!selectedServices.size) return []
     const genreFilter = [primaryGenre, alternateGenre].filter((g): g is number => g !== null)
     return enriched.filter(film => {
       if (!film.providers.some(p => selectedServices.has(p.providerName))) return false
-      if (genreFilter.length === 0) return true
-      return (film.genreIds ?? []).some(id => genreFilter.includes(id))
+      if (genreFilter.length > 0 && !(film.genreIds ?? []).some(id => genreFilter.includes(id))) return false
+      if (maxRuntime !== null) {
+        if (film.runtime == null || film.runtime > maxRuntime + RUNTIME_BUFFER_MINUTES) return false
+      }
+      return true
     })
-  }, [enriched, selectedServices, primaryGenre, alternateGenre])
+  }, [enriched, selectedServices, primaryGenre, alternateGenre, maxRuntime])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -147,6 +157,7 @@ export default function Page() {
     setPickedFilm(null)
     setPrimaryGenre(null)
     setAlternateGenre(null)
+    setMaxRuntime(null)
     setPhase('loading')
 
     try {
@@ -505,6 +516,27 @@ export default function Page() {
                         ))}
                       </select>
                     </div>
+                  </div>
+                )}
+
+                {availableRuntimes && (
+                  <div className="flex flex-col gap-1.5 pt-2">
+                    <p className="text-xs font-medium" style={{ color: '#71717a' }}>
+                      Max runtime (optional):
+                    </p>
+                    <select
+                      value={maxRuntime ?? ''}
+                      onChange={e => setMaxRuntime(e.target.value ? Number(e.target.value) : null)}
+                      className="w-full px-3 py-2 rounded text-sm outline-none"
+                      style={{ background: '#1a1a1a', color: '#e8e5e0', border: '1px solid #2a2a2a' }}
+                    >
+                      <option value="">Any length</option>
+                      {RUNTIME_OPTIONS.map(mins => (
+                        <option key={mins} value={mins}>
+                          Up to {mins} min (+{RUNTIME_BUFFER_MINUTES} min buffer)
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
 
