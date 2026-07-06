@@ -275,12 +275,20 @@ export default function Page() {
               Scan my watchlist
             </button>
 
-            <div className="text-center pt-1">
-              <span className="text-xs" style={{ color: '#444' }}>or </span>
-              <Link href="/party/new" className="text-xs" style={{ color: '#f5a623' }}>
-                create a party
-              </Link>
-            </div>
+            <Link
+              href="/party/new"
+              className="flex flex-col items-center gap-0.5 pt-2 pb-1 text-center transition-opacity hover:opacity-80"
+            >
+              <span className="text-xs" style={{ color: '#71717a' }}>
+                Hosting a movie night?
+              </span>
+              <span
+                className="text-xs font-bold tracking-wide"
+                style={{ color: '#f5a623', letterSpacing: '0.05em' }}
+              >
+                CREATE A PARTY
+              </span>
+            </Link>
           </form>
         )}
 
