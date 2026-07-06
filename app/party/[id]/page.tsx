@@ -331,7 +331,7 @@ export default function PartyPage() {
         <Link href="/">
           <h1
             className="uppercase"
-            style={{ color: '#f5a623', fontFamily: 'Humane, sans-serif', fontSize: '5.5rem', lineHeight: 1, letterSpacing: '-0.02em' }}
+            style={{ color: '#f5a623', fontFamily: 'Humane, sans-serif', fontSize: '5.5rem', lineHeight: 1, letterSpacing: '-0.008em' }}
           >
             Now Playing
           </h1>
