@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import Link from 'next/link'
 import MovieCard from '@/components/MovieCard'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { searchMovie, getWatchProviders } from '@/lib/tmdb'
@@ -265,6 +266,13 @@ export default function Page() {
             >
               Scan my watchlist
             </button>
+
+            <div className="text-center pt-1">
+              <span className="text-xs" style={{ color: '#444' }}>or </span>
+              <Link href="/party/new" className="text-xs" style={{ color: '#f5a623' }}>
+                create a party
+              </Link>
+            </div>
           </form>
         )}
 

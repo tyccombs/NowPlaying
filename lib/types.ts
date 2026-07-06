@@ -26,3 +26,17 @@ export type EnrichedFilm = LetterboxdFilm & {
   providers: StreamingProvider[]
   genreIds: number[]
 }
+
+export type PartyData = {
+  id: string
+  hostToken: string
+  hostUsername: string
+  members: string[]
+  services: string[]
+  primaryGenre: number | null
+  alternateGenre: number | null
+  pickedFilm: EnrichedFilm | null
+  createdAt: number
+}
+
+export type PartyState = Omit<PartyData, 'hostToken'>
