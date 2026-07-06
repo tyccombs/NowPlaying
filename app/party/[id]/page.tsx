@@ -336,6 +336,15 @@ export default function PartyPage() {
             Now Playing
           </h1>
         </Link>
+        <a
+          href="https://wencomb.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block text-[10px] uppercase transition-colors hover:opacity-80"
+          style={{ color: '#444', letterSpacing: '0.15em' }}
+        >
+          by wencomb
+        </a>
         <p className="mt-2 text-sm" style={{ color: '#71717a' }}>
           Party mode
         </p>
