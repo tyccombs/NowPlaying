@@ -6,7 +6,7 @@ import Link from 'next/link'
 import MovieCard from '@/components/MovieCard'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { searchMovie, getWatchProviders } from '@/lib/tmdb'
-import { sortServices, TMDB_GENRES } from '@/lib/services'
+import { sortServices, TMDB_GENRES, FREE_SERVICES } from '@/lib/services'
 import type { LetterboxdFilm, EnrichedFilm, PartyState } from '@/lib/types'
 
 const TMDB_TOKEN = process.env.NEXT_PUBLIC_TMDB_READ_TOKEN ?? ''
@@ -319,7 +319,7 @@ export default function PartyPage() {
   const COMMON_SERVICES = [
     'Netflix', 'Amazon Prime Video', 'Disney Plus', 'Max', 'Hulu',
     'Apple TV Plus', 'Peacock Premium', 'Paramount Plus', 'Criterion Channel',
-    'Shudder', 'MUBI', 'Tubi TV', 'PlutoTV', 'Kanopy',
+    'Shudder', 'MUBI', 'Tubi TV', 'Pluto TV', 'The Roku Channel', 'Kanopy',
   ]
 
   const visibleServices = showAllServices ? COMMON_SERVICES : COMMON_SERVICES.slice(0, COLLAPSED_SERVICE_COUNT)
@@ -504,6 +504,14 @@ export default function PartyPage() {
                     className="sr-only"
                   />
                   <span className="flex-1 text-sm">{name}</span>
+                  {FREE_SERVICES.has(name) && (
+                    <span
+                      className="text-[10px] font-medium px-1.5 py-0.5 rounded-sm flex-shrink-0"
+                      style={{ background: '#1a2e1a', color: '#7cc47f' }}
+                    >
+                      Free
+                    </span>
+                  )}
                   <span
                     className="w-4 h-4 rounded-sm flex items-center justify-center text-xs flex-shrink-0"
                     style={{

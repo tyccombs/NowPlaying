@@ -60,13 +60,35 @@ export async function getWatchProviders(
 
   const data = await res.json()
   const countryData = data.results?.[country]
-  if (!countryData?.flatrate) return []
+  if (!countryData) return []
 
-  return countryData.flatrate.map(
-    (p: { provider_id: number; provider_name: string; logo_path: string }) => ({
-      providerId: p.provider_id,
-      providerName: p.provider_name,
-      logoPath: `https://image.tmdb.org/t/p/w45${p.logo_path}`,
-    })
-  )
+  // TMDB splits providers into subscription (`flatrate`) vs ad-supported/free
+  // (`free`, `ads`) tiers, e.g. Tubi and Pluto TV live under `free`. A provider
+  // can appear in more than one bucket (e.g. rent + free) — dedupe by id and
+  // keep the first bucket it's found in, checking `flatrate` first so a
+  // provider also offered ad-free isn't mislabeled as free.
+  const buckets: Array<['flatrate' | 'free' | 'ads', boolean]> = [
+    ['flatrate', false],
+    ['free', true],
+    ['ads', true],
+  ]
+
+  const seen = new Map<number, StreamingProvider>()
+  for (const [key, free] of buckets) {
+    const entries = countryData[key] as
+      | Array<{ provider_id: number; provider_name: string; logo_path: string }>
+      | undefined
+    if (!entries) continue
+    for (const p of entries) {
+      if (seen.has(p.provider_id)) continue
+      seen.set(p.provider_id, {
+        providerId: p.provider_id,
+        providerName: p.provider_name,
+        logoPath: `https://image.tmdb.org/t/p/w45${p.logo_path}`,
+        free,
+      })
+    }
+  }
+
+  return Array.from(seen.values())
 }

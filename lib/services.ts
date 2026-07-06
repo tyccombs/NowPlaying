@@ -33,9 +33,16 @@ export const PRIORITY_SERVICES = [
   'Shudder',
   'MUBI',
   'Tubi TV',
-  'PlutoTV',
+  'Pluto TV',
+  'The Roku Channel',
   'Kanopy',
 ]
+
+// Ad-supported/free services shown with a "Free" badge in the selector.
+// Kept as a name set (rather than plumbing TMDB's free/ads category through
+// party mode's manually-entered service list) so both modes can badge the
+// same well-known free services.
+export const FREE_SERVICES = new Set(['Tubi TV', 'Pluto TV', 'The Roku Channel'])
 
 export function sortServices(services: string[]): string[] {
   const prioritized = PRIORITY_SERVICES.filter(s => services.includes(s))

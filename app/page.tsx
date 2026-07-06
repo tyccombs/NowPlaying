@@ -5,7 +5,7 @@ import Link from 'next/link'
 import MovieCard from '@/components/MovieCard'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { searchMovie, getWatchProviders } from '@/lib/tmdb'
-import { sortServices, COUNTRIES, TMDB_GENRES } from '@/lib/services'
+import { sortServices, COUNTRIES, TMDB_GENRES, FREE_SERVICES } from '@/lib/services'
 import type { LetterboxdFilm, EnrichedFilm } from '@/lib/types'
 
 type Phase = 'idle' | 'loading' | 'enriching' | 'ready' | 'picked'
@@ -338,6 +338,14 @@ export default function Page() {
                       />
                       <img src={svc.logoPath} alt={name} width={20} height={20} className="rounded-sm flex-shrink-0" />
                       <span className="flex-1 text-sm">{name}</span>
+                      {FREE_SERVICES.has(name) && (
+                        <span
+                          className="text-[10px] font-medium px-1.5 py-0.5 rounded-sm flex-shrink-0"
+                          style={{ background: '#1a2e1a', color: '#7cc47f' }}
+                        >
+                          Free
+                        </span>
+                      )}
                       <span className="text-xs" style={{ color: '#71717a' }}>{svc.count}</span>
                       <span
                         className="w-4 h-4 rounded-sm flex items-center justify-center text-xs flex-shrink-0"

@@ -16,6 +16,7 @@ export type StreamingProvider = {
   providerId: number
   providerName: string
   logoPath: string
+  free: boolean
 }
 
 export type EnrichedFilm = LetterboxdFilm & {
