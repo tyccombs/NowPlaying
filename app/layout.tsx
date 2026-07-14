@@ -10,6 +10,8 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID ?? ''
+const ADSENSE_SIDEBAR_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_SLOT ?? ''
+const ADS_CONFIGURED = Boolean(ADSENSE_CLIENT_ID && ADSENSE_SIDEBAR_SLOT)
 
 export const metadata: Metadata = {
   title: 'Now Playing',
@@ -21,6 +23,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={spaceGrotesk.className}>
       <body className="min-h-dvh antialiased">
         <div className="flex flex-col lg:flex-row">
+          {ADS_CONFIGURED && (
+            <div aria-hidden="true" className="hidden lg:block lg:w-[332px] lg:flex-shrink-0" />
+          )}
           <div className="min-w-0 flex-1">{children}</div>
           <AdRail />
         </div>
