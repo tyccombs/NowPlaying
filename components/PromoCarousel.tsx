@@ -14,6 +14,13 @@ const SLIDES = Array.from(
 export default function PromoCarousel() {
   const [index, setIndex] = useState(0)
 
+  // Randomize the starting slide client-side only, after hydration, so the
+  // server-rendered markup (always slide 0) matches the client's first
+  // render and React doesn't flag a hydration mismatch.
+  useEffect(() => {
+    setIndex(Math.floor(Math.random() * SLIDES.length))
+  }, [])
+
   useEffect(() => {
     const id = setInterval(() => {
       setIndex((i) => (i + 1) % SLIDES.length)
@@ -38,7 +45,7 @@ export default function PromoCarousel() {
           alt="Wencomb on YouTube"
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
           style={{ opacity: i === index ? 1 : 0 }}
-          loading={i === 0 ? 'eager' : 'lazy'}
+          loading="eager"
         />
       ))}
     </a>
