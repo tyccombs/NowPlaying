@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import MobilePromoBanner from '@/components/MobilePromoBanner'
 
 export default function JoinPartyPage() {
   const router = useRouter()
@@ -80,6 +81,8 @@ export default function JoinPartyPage() {
           </div>
         </form>
       </div>
+
+      <MobilePromoBanner />
     </main>
   )
 }

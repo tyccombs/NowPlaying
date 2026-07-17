@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import MovieCard from '@/components/MovieCard'
+import MobilePromoBanner from '@/components/MobilePromoBanner'
 import { cacheGet, cacheSet } from '@/lib/cache'
 import { searchMovie, getMovieDetails } from '@/lib/tmdb'
 import { sortServices, TMDB_GENRES, FREE_SERVICES, RUNTIME_OPTIONS, RUNTIME_BUFFER_MINUTES } from '@/lib/services'
@@ -684,6 +685,8 @@ export default function PartyPage() {
           </div>
         )}
       </div>
+
+      <MobilePromoBanner />
 
       <footer className="mt-auto pt-16 flex flex-col items-center gap-1 text-center">
         <p className="text-xs" style={{ color: '#444' }}>

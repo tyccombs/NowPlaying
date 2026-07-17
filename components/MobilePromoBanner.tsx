@@ -3,23 +3,27 @@
 import { useEffect, useState } from 'react'
 
 const YOUTUBE_URL = 'https://www.youtube.com/channel/UCY-9CrbcBqOtbAoTEd4xfXg'
-const SLIDE_COUNT = 10
+const SLIDE_COUNT = 11
 const SLIDE_INTERVAL_MS = 5000
 
 const SLIDES = Array.from(
   { length: SLIDE_COUNT },
-  (_, i) => `/promo/np-ad-${String(i + 1).padStart(2, '0')}.webp`
+  (_, i) => `/promo/mobile/np-ad-mobile-${String(i + 1).padStart(2, '0')}.webp`
 )
 
-// Desktop-only vertical skyscraper rail (sidebar). The mobile equivalent
-// is a separate component (MobilePromoBanner) rendered inline in each
-// page's content, not here — see that file for why.
-export default function PromoCarousel() {
+// Mobile-only horizontal banner, dropped inline into each page's content
+// column (below the main card, above the footer) rather than living in
+// the global layout like the desktop PromoRail — this positions it right
+// under the page's primary actions instead of at the very bottom of the
+// screen. Every page's <main> is `flex flex-col items-center`, so a plain
+// block child gets cross-axis fit-content sizing (its only children are
+// absolutely-positioned <img>s, which contribute nothing to that sizing,
+// collapsing width/height to 0). The 100vw + calc() breakout is the
+// classic full-bleed trick and sidesteps that entirely by sizing off the
+// viewport instead of the flex item's content.
+export default function MobilePromoBanner() {
   const [index, setIndex] = useState(0)
 
-  // Randomize the starting slide client-side only, after hydration, so the
-  // server-rendered markup (always slide 0) matches the client's first
-  // render and React doesn't flag a hydration mismatch.
   useEffect(() => {
     setIndex(Math.floor(Math.random() * SLIDES.length))
   }, [])
@@ -37,8 +41,8 @@ export default function PromoCarousel() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Visit the Wencomb YouTube channel"
-      className="relative block w-[120px] overflow-hidden rounded-sm"
-      style={{ aspectRatio: '120 / 600' }}
+      className="relative mt-8 block overflow-hidden lg:hidden"
+      style={{ aspectRatio: '300 / 100', width: '100vw', marginLeft: 'calc(50% - 50vw)' }}
     >
       {SLIDES.map((src, i) => (
         // eslint-disable-next-line @next/next/no-img-element

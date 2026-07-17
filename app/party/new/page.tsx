@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import MobilePromoBanner from '@/components/MobilePromoBanner'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -162,6 +163,8 @@ export default function NewPartyPage() {
           </div>
         </form>
       </div>
+
+      <MobilePromoBanner />
     </main>
   )
 }
