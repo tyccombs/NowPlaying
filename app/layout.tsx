@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
 import Script from 'next/script'
 import AdRail from '@/components/AdRail'
+import PromoRail from '@/components/PromoRail'
 import './globals.css'
 
 const spaceGrotesk = Space_Grotesk({
@@ -23,11 +24,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={spaceGrotesk.className}>
       <body className="min-h-dvh antialiased">
         <div className="flex flex-col lg:flex-row">
-          {ADS_CONFIGURED && (
-            <div aria-hidden="true" className="hidden lg:block lg:w-[332px] lg:flex-shrink-0" />
+          <div className="order-2 lg:order-1">
+            <PromoRail />
+          </div>
+          <div className="order-1 min-w-0 flex-1 lg:order-2">{children}</div>
+          {!ADS_CONFIGURED && (
+            <div aria-hidden="true" className="hidden lg:order-3 lg:block lg:w-[332px] lg:flex-shrink-0" />
           )}
-          <div className="min-w-0 flex-1">{children}</div>
-          <AdRail />
+          <div className="order-3">
+            <AdRail />
+          </div>
         </div>
         {ADSENSE_CLIENT_ID && (
           <Script
