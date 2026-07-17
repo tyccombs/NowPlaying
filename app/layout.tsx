@@ -14,9 +14,25 @@ const ADSENSE_CLIENT_ID = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID ?? ''
 const ADSENSE_SIDEBAR_SLOT = process.env.NEXT_PUBLIC_ADSENSE_SIDEBAR_SLOT ?? ''
 const ADS_CONFIGURED = Boolean(ADSENSE_CLIENT_ID && ADSENSE_SIDEBAR_SLOT)
 
+const TITLE = 'Now Playing'
+const DESCRIPTION = 'Pick a movie from your Letterboxd watchlist that\'s streaming tonight.'
+
 export const metadata: Metadata = {
-  title: 'Now Playing',
-  description: 'Pick a movie from your Letterboxd watchlist that\'s streaming tonight.',
+  metadataBase: new URL('https://nowplayingmovie.com'),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: 'https://nowplayingmovie.com',
+    siteName: TITLE,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
