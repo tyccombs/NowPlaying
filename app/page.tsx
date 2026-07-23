@@ -231,6 +231,9 @@ export default function Page() {
         <p className="mt-2 text-sm" style={{ color: '#71717a' }}>
           Pick a movie from your Letterboxd watchlist that&apos;s streaming tonight
         </p>
+        <p className="mt-1.5 text-xs max-w-xs mx-auto" style={{ color: '#555' }}>
+          Enter your username, check off your streaming services, and we&apos;ll pick a random movie you can actually watch right now.
+        </p>
       </div>
 
       <div className="w-full max-w-sm">

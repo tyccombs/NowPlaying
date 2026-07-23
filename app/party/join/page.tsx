@@ -37,6 +37,9 @@ export default function JoinPartyPage() {
         <p className="mt-2 text-sm" style={{ color: '#71717a' }}>
           Enter the party code your host gave you
         </p>
+        <p className="mt-1.5 text-xs max-w-xs mx-auto" style={{ color: '#555' }}>
+          Add your Letterboxd username and your watchlist counts toward the group&apos;s pick — everyone sees the same movie.
+        </p>
       </div>
 
       <div className="w-full max-w-sm">

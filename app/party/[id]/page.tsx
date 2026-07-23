@@ -364,6 +364,9 @@ export default function PartyPage() {
         <p className="mt-2 text-sm" style={{ color: '#71717a' }}>
           Party mode
         </p>
+        <p className="mt-1.5 text-xs max-w-xs mx-auto" style={{ color: '#555' }}>
+          The pick comes from movies shared across everyone&apos;s watchlists — when the host picks, everyone&apos;s screen shows the same movie.
+        </p>
       </div>
 
       <div className="w-full max-w-sm flex flex-col gap-5">

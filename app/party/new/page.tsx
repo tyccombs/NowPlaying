@@ -77,6 +77,9 @@ export default function NewPartyPage() {
         <p className="mt-2 text-sm" style={{ color: '#71717a' }}>
           Create a party and pick a movie with friends
         </p>
+        <p className="mt-1.5 text-xs max-w-xs mx-auto" style={{ color: '#555' }}>
+          You&apos;ll get a code to share — friends add their Letterboxd usernames, and the pick comes from movies on everyone&apos;s watchlists.
+        </p>
       </div>
 
       <div className="w-full max-w-sm">
